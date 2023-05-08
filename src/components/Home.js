@@ -27,15 +27,10 @@ import { Card,
 
 import PhotoSharingNFT from '../contracts/PhotoSharingNFT.json'
 
-import axios from 'axios'
-
-
-import {Buffer} from 'buffer'
 
 
 
-
-export default function Profile() {
+export default function Home() {
 
     const[posts,setPosts] = useState(undefined)
 
@@ -78,22 +73,15 @@ export default function Profile() {
         });
       }
 
-    // const handleSell = (e) => {
-    //     e.preventDefault()
-    //     setSellPrice(e.target.value)
-    // }
-    
-    // function  handleSellPrice(e) {
-    //     e.preventDefault()
-    //     setSellPrice(e.target.value)
-    // }
-
 
 
     useEffect( () => {
 
 
         console.log(loaded)
+
+         // blockchain function get all posts
+
         const getAllPosts = async () => {
 
             const ethers = require("ethers");
@@ -164,33 +152,9 @@ export default function Profile() {
     },[posts])
 
 
-    const getIPFSGatewayURL = (ipfsURL)=>{
-        let urlArray = ipfsURL.split("/");
-        let ipfsGateWayURL = `https://${urlArray[2]}.ipfs.dweb.link/${urlArray[3]}`;
-        console.log(ipfsGateWayURL)
-        return ipfsGateWayURL;
-        }
-
-        const getImage = (ipfsURL) => {
-            if (!ipfsURL) return
-            ipfsURL = ipfsURL.split('://')
-            return 'https://ipfs.io/ipfs/' + ipfsURL[1]
-          }
 
           
-
-async function getData(url) {
-    
-   const id =  url.split("/")
-  const  cid = id[2]
-  console.log(cid)
-    let data = await fetch(
-        `https://ipfs.io/ipfs/${cid}/metadata.json`,
-      )
-      var js_data = await data.json()
-      console.log(js_data)
-      return js_data
-   }
+ // blockchain function update sell price
 
 async function updatePrice(tokenId,bonus,id) {
 
@@ -221,11 +185,14 @@ catch(e) {
     }
 }
 
+
+ // blockchain function buy nft
+
 async function buyNFT(address,token,price) {
 
     const ethers = require("ethers");
 
-
+    console.log('efniefirbr')
     console.log(String(price),token,ethers.utils.parseEther(String(price)) )
     setUpdating(true)
     
@@ -248,10 +215,6 @@ catch(e) {
     }
 }
 
-function  handleSellPrice(e) {
-    e.preventDefault()
-    setSellPrice(e.target.value)
-}
 
 function SellBuy({val,cid}) {
     const { account } = useMetaMask();
@@ -300,76 +263,7 @@ function SellBuy({val,cid}) {
 
 
 
-async function compareImg(image_c,timestamp_c,images,tokenid) {
 
-    function getBase64(url) {
-        return axios
-          .get(url, {
-            responseType: 'arraybuffer'
-          })
-          .then(response => Buffer.from(response.data,'binary').toString('base64'))
-      }
-
-    var cur_date = new Date(timestamp_c)
-    var image1 = image_c
-
-    var token1 = tokenid
-
-    console.log(image_c,)
-
-    for (var i in images) {
-        var token2 = images[i].tokenid
-        if (token1 != token2) {
-        // if (cur_date > new Date(images[i].timestamp))
-        // {
-            console.log(cur_date,new Date(images[i].timestamp))
-            
-
-            var image2 = images[i].image
-            var ipfsURL = image2.split('://')
-            // ipfsURL = ipfsURL[3].split('/')
-            
-            var image2 =  'https://ipfs.io/ipfs/' + ipfsURL[1]
-
-            console.log(image_c,image2)
-
-            const img1_buf = await getBase64(image1)
-            const img2_buf = await getBase64(image2)
-
-            if (img1_buf == img2_buf) {
-                console.log('duplicate', image_c,timestamp_c,images,tokenid)
-                
-                    console.log('check duplicate', image1,image2, token1)
-                
-                return true
-                
-            }
-
-        }
-
-        // }
-       
-    }
-    return false
-}
-
-
-function checkUnique(value) {
-
-    
-    for (var k = 0; k < uniquePosts.length; k++) {
-        console.log(uniquePosts[k])
-        
-        if(uniquePosts[k].token1 == value) {
-            console.log(uniquePosts[k].token1,uniquePosts[k].val)
-            
-            return uniquePosts[k].val
-            
-        } 
-        // else 
-    }
-    return false
-}
 
 function Post({cid,address}) {
     const { account } = useMetaMask();
@@ -386,6 +280,7 @@ function Post({cid,address}) {
 
         var owner = cid['owner']
         var unique = cid['unique']
+        
 
         var timestamp = cid['timestamp']
 
@@ -398,12 +293,8 @@ console.log(address,account)
         var image =  'https://ipfs.io/ipfs/' + ipfsURL[1]
         console.log(image)
 
-        // checks for current users nfts
-        
-        if(owner.toLowerCase() == account.toLowerCase()) { 
         return(
             <Center>
-                
             <Card margin='4'  minW={'300px'}>
 <CardHeader>
     <Flex spacing='4'>
@@ -464,7 +355,6 @@ console.log(address,account)
           </Card>
           </Center> )
         }
-        }
     // }
 
 
@@ -472,15 +362,13 @@ console.log(address,account)
            <div>
 
 
-<Heading padding={5}>NFT's you own</Heading>
+
             {posts_final != undefined ? posts_final.map((post,i) => {
                 return(
-                    <>
                     <div>
                         <Post key={i} cid={post}/>
-                        {/* <SellBuy val={i} key={i} cid={post}/> */}
+                        <SellBuy val={i} key={i} cid={post}/>
                     </div>
-                    </>
                 )
                 
             }) : undefined}

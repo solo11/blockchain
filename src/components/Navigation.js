@@ -18,17 +18,82 @@ import {
     PopoverArrow,
     PopoverBody,
     PopoverHeader,
-    PopoverCloseButton
+    PopoverCloseButton,
+    Link,
+    Text,
+    Alert,
+    AlertIcon
   } from '@chakra-ui/react';
-  import { MoonIcon, SunIcon } from '@chakra-ui/icons';
+  import { MoonIcon, SunIcon, ChevronDownIcon } from '@chakra-ui/icons';
   
   import { useMetaMask } from "metamask-react";
   import { IconCus } from './dist/icon';
+  import { Link as RouterLink } from 'react-router-dom';
+
+
+import PhotoSharingNFT from '../contracts/PhotoSharingNFT.json'
+import { useState } from 'react';
   
-  
+
   export default function Nav() {
      
       const { status, connect, account, chainId, ethereum } = useMetaMask();
+
+      const [admin, setAdmin] = useState(false)
+
+      const [pauseC, setPause] = useState(false)
+
+      const checkAdmin = async () => {
+        const ethers = require("ethers");
+const provider = new ethers.providers.Web3Provider(window.ethereum);
+const signer = provider.getSigner();
+
+//Pull the deployed contract instance
+let contract = new ethers.Contract(PhotoSharingNFT.address, PhotoSharingNFT.abi, signer);
+
+var address = await contract.getAdmin()
+
+console.log(account,address)
+if (account.toLocaleLowerCase() == address.toLocaleLowerCase()) {
+  return true
+}else {return false}
+      }
+
+
+      const pause = async () => {
+        const ethers = require("ethers");
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        
+        //Pull the deployed contract instance
+        let contract = new ethers.Contract(PhotoSharingNFT.address, PhotoSharingNFT.abi, signer);
+
+        try {
+          await contract.pauseContract()
+          setPause(true)
+
+        }
+        catch (e) {
+          console.error(e)
+        }
+      }
+
+      const unpause = async () => {
+        const ethers = require("ethers");
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        
+        //Pull the deployed contract instance
+        let contract = new ethers.Contract(PhotoSharingNFT.address, PhotoSharingNFT.abi, signer);
+
+        try {
+          await contract.unpauseContract()
+          setPause(false)
+        }
+        catch (e) {
+          console.error(e)
+        }
+      }
   
       function Metamask() {
         
@@ -57,58 +122,86 @@ import {
           )
           return null
       } 
+
+
   
     const { colorMode, toggleColorMode } = useColorMode();
+    var val =  checkAdmin().then(function(res) {
+      setAdmin(res)
+      console.log(admin)
+    })
+
     return (
       <>
         <Box bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
           <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
+          <RouterLink  to="/home" > 
             <Box>Logo</Box>
-          
+            </RouterLink>
   
             <Flex alignItems={'center'}>
               <Stack direction={'row'} spacing={7}>
+
+                <RouterLink  to="/home" >
+                  <Link>
+                  <Text paddingTop={'8px'}>
+                    Home
+                  </Text>
+                  </Link>
+                </RouterLink>
+
+                <RouterLink  to="/profile" >
+                  <Link>
+                  <Text paddingTop={'8px'}>
+                    Profile
+                  </Text>
+                  </Link>
+                </RouterLink>
+
+                <RouterLink  to="/upload" >
+                  <Link>
+                  <Text paddingTop={'8px'}>
+                    Upload
+                  </Text>
+                  </Link>
+                </RouterLink>
+
+                <RouterLink  to="/register" >
+                  <Link>
+                  <Text paddingTop={'8px'}>
+                    Register
+                  </Text>
+                  </Link>
+                </RouterLink>
+
+                {
+                  admin ? <Menu>
+                  <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+                    Contract
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem onClick={() => {pause()}}>Pause</MenuItem>
+                    <MenuItem onClick={() => {unpause()}}>Unpause</MenuItem>
+                  </MenuList>
+                </Menu> : undefined
+                }
+
+
                 <Button onClick={toggleColorMode}>
                   {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
                 </Button>
                 
           <Metamask />
-                <Menu>
-                  <MenuButton
-                    as={Button}
-                    rounded={'full'}
-                    variant={'link'}
-                    cursor={'pointer'}
-                    minW={0}>
-                    <Avatar
-                      size={'sm'}
-                      src={'https://raw.githubusercontent.com/MetaMask/brand-resources/c3c894bb8c460a2e9f47c07f6ef32e234190a7aa/SVG/metamask-fox.svg'}
-                    />
-                    
-                  </MenuButton>
-                  <MenuList alignItems={'center'}>
-                    <br />
-                    <Center>
-                      <Avatar
-                        size={'2xl'}
-                        src={'https://avatars.dicebear.com/api/male/username.svg'}
-                      />
-                    </Center>
-                    <br />
-                    <Center>
-                      <p>Username</p>
-                    </Center>
-                    <br />
-                    <MenuDivider />
-                    <MenuItem>Your Servers</MenuItem>
-                    <MenuItem>Account Settings</MenuItem>
-                    <MenuItem>Logout</MenuItem>
-                  </MenuList>
-                </Menu>
+
               </Stack>
             </Flex>
           </Flex>
         </Box>
+{pauseC ?        <Alert status='error'>
+                    <AlertIcon />
+                    The contract is paused, the dapp is not operational
+                  </Alert> : undefined}
+
       </>
     );
   }

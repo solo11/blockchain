@@ -6,6 +6,9 @@ import reportWebVitals from './reportWebVitals';
 
 import { MetaMaskProvider } from "metamask-react";
 import { ChakraProvider } from '@chakra-ui/react'
+import Nav from './components/Navigation';
+
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
